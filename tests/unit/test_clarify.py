@@ -29,7 +29,7 @@ from sagemaker.clarify import (
     SHAPConfig,
     TextConfig,
     ImageConfig,
-    _AnalysisConfigGenerator,
+    _AnalysisConfigGenerator, SegmentationConfig,
 )
 
 JOB_NAME_PREFIX = "my-prefix"
@@ -67,6 +67,28 @@ def test_data_config():
         "dataset_type": "text/csv",
         "headers": headers,
         "label": "Label",
+    }
+
+    assert expected_config == data_config.get_config()
+    assert s3_data_input_path == data_config.s3_data_input_path
+    assert s3_output_path == data_config.s3_output_path
+    assert "None" == data_config.s3_compression_type
+    assert "FullyReplicated" == data_config.s3_data_distribution_type
+
+    data_config = DataConfig(
+        s3_data_input_path=s3_data_input_path,
+        s3_output_path=s3_output_path,
+        label=label_name,
+        headers=headers,
+        dataset_type=dataset_type,
+        segmentation_config=[SegmentationConfig(name_or_index="F2", segments=[["v1", "v1"]])]
+    )
+
+    expected_config = {
+        "dataset_type": "text/csv",
+        "headers": headers,
+        "label": "Label",
+        'segmentation_config': [{'name_or_index': 'F2', 'segments': [['v1', 'v1']]}]
     }
 
     assert expected_config == data_config.get_config()
